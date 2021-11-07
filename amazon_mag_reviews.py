@@ -2,10 +2,16 @@
 """File to pull Amazon review data for magazine subscriptions and fine tune a BERT model using said data"""
 
 import torch
+import torch.nn as nn
 import json
 import numpy as np
 import gzip
 import time
+from resources.train_model import train_model
+from resources.bert_dataset import BertData
+from resources.utility_functions import split_data, get_tokenizer
+
+
 
 # set the path to where the data files are stored
 PATH_TO_DATA: str = "./data/Magazine_Subscriptions.json.gz"
@@ -20,21 +26,39 @@ def read_data(path: str) -> list:
     :param path - the path str
     :return data - a list containing all the rows from the dataset"""
     data = []
-    with gzip.open(PATH_TO_DATA) as f:
+    labels = []
+    with gzip.open(path) as f:
         for row in f:
-            # read row with json library and receieve a dict
+            # read row with json library and recieve a dict
             row_dict = json.loads(row)
             # add only relevant data to the data list
             try:
-                data.append([row_dict[FIELDS[0]], row_dict[FIELDS[1]]])
-            # ensure that rows with missing rewiews are excluded but that the program continues
+                data.append(row_dict[FIELDS[0]])
+                # classes for classificaiton should start from 0 and be in int form
+                labels.append(int(row_dict[FIELDS[1]] - 1))
+            # ensure that rows with missing reviews are excluded but that the program continues
             except KeyError:
                 continue
-    return data
+    # convert list to array for easier/faster processing
+    return data, labels
+
+
+def main():
+    """the main method of the script that loads today and trains a fine-tuned BERT model"""
+    # collect data matrix and labels
+    dataset, labels = read_data(path=PATH_TO_DATA)
+    #split both X and y into train, test, and validation sets
+    train_data, train_labels,  test_data, test_labels, val_data, val_labels = split_data(data=dataset, labels=labels)
+    # get tokenizer and create Dataset objects for train, test, and validation sets for use in model training
+    tokenizer = get_tokenizer()
+    tokens_train = tokenizer(train_data[0:2000], truncation=True, padding=True, max_length=30, add_special_tokens=True)
+    review_train = BertData(tokens_train, train_labels[0:2000])
+    train_model(data=review_train, num_labels=len(set(labels)), seq=True)
+
+
+
+
 
 
 if __name__ == "__main__":
-    tic = time.perf_counter()
-    print(read_data(PATH_TO_DATA)[99])
-    toc = time.perf_counter()
-    print(toc - tic)
+    main()
