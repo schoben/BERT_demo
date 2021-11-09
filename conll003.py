@@ -3,10 +3,10 @@
 
 import zipfile as zp
 import numpy as np
-from resources.utility_functions import split_data
 from resources.train_model import train_model
 from resources.bert_dataset import BertData
 from transformers import DistilBertTokenizerFast
+from sklearn.model_selection import train_test_split
 
 
 # The base path where the data archive is located.
@@ -93,13 +93,17 @@ def select_subtoken(tags: list, offset_mapping: list, mapping: dict):
         encoded_labels.append(row_encode.tolist())
     return encoded_labels
 
-def main():
+
+def run_ner():
     """The main method of the module. This function runs the code that will load, tokenize, and train."""
     raw_data, raw_labels = read_data(PATH_TO_DATA, FILES['train'])
-    # split the data into train and valdiation sets
-    train_data, train_label, test_data, test_label, val_data, val_label = split_data(data=raw_data[0:2000], labels=raw_labels[0:2000])
+    # split the data into train and validation sets, ensure data is shuffled
+    train_data, val_data, train_label, val_label = train_test_split(raw_data[0:2000],
+                                                                    raw_labels[0:2000],
+                                                                    shuffle=True,
+                                                                    random_state=42)
     # tokenize the text, but ensure that the tokenizer understands that words are already separated
-    #tokenizer = get_tokenizer(name='distilbert', case='cased')
+    # We will ensure that longer sequences are truncated and shorter ones are padded
     tokenizer = DistilBertTokenizerFast.from_pretrained(PRETRAINED)
     tokens_train = tokenizer(train_data, truncation=True, padding=True,
                              is_split_into_words=True, return_offsets_mapping=True)
@@ -125,4 +129,4 @@ def main():
     print('done')
 
 if __name__ == "__main__":
-    main()
+    run_ner()

@@ -5,7 +5,7 @@ import json
 import gzip
 from resources.train_model import train_model
 from resources.bert_dataset import BertData
-from resources.utility_functions import split_data
+from sklearn.model_selection import train_test_split
 from transformers import DistilBertTokenizerFast
 
 # set the path to where the data files are stored
@@ -16,7 +16,7 @@ PATH_TO_DATA: str = "./data/Magazine_Subscriptions.json.gz"
 FIELDS: list = ['reviewText', 'overall']
 # This is the tokenizer we want, we are trying to evaluate sequence rating
 # capitalization not as important:
-PRETRAINED = 'distilbert_base-uncased'
+PRETRAINED = 'distilbert-base-uncased'
 
 
 def read_data(path: str) -> (list, list):
@@ -42,12 +42,15 @@ def read_data(path: str) -> (list, list):
     return data, labels
 
 
-def main():
+def run_seq_cls():
     """the main method of the script that loads today and trains a fine-tuned BERT model"""
     # collect data matrix and labels
-    dataset, labels = read_data(path=PATH_TO_DATA)
-    # split both X and y into train, test, and validation sets
-    train_data, train_labels, test_data, test_labels, val_data, val_labels = split_data(data=dataset, labels=labels)
+    raw_data, raw_labels = read_data(path=PATH_TO_DATA)
+    # split both X and y into train, test, and validation sets,ensure data is shuffled
+    train_data, val_data, train_label, val_label = train_test_split(raw_data[0:2000],
+                                                                    raw_labels[0:2000],
+                                                                    shuffle=True,
+                                                                    random_state=42)
     # get tokenizer and create Dataset objects for train, test, and validation sets for use in model training
     tokenizer = DistilBertTokenizerFast.from_pretrained(PRETRAINED)
     # tokenize the reviews for the training set
@@ -56,10 +59,10 @@ def main():
     # tokenize the validation set
     tokens_val = tokenizer(val_data[0:500], truncation=True, padding=True, max_length=30,
                            add_special_tokens=True)
-    review_train = BertData(tokens_train, train_labels[0:2000])
-    review_val = BertData(tokens_val, val_labels[0:500])
-    train_model(data=review_train, val=review_val, num_labels=len(set(labels)), seq=True)
+    review_train = BertData(tokens_train, train_label[0:2000])
+    review_val = BertData(tokens_val, val_label[0:500])
+    train_model(data=review_train, val=review_val, num_labels=len(set(raw_labels)), seq=True)
 
 
 if __name__ == "__main__":
-    main()
+    run_seq_cls()
