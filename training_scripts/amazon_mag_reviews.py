@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """File to pull Amazon review data for magazine subscriptions and fine tune a BERT model using said data"""
 
+
+import os
 import json
 import gzip
 from resources.train_model import train_model
@@ -9,7 +11,7 @@ from sklearn.model_selection import train_test_split
 from transformers import DistilBertTokenizerFast
 
 # set the path to where the data files are stored
-PATH_TO_DATA: str = "./data/Magazine_Subscriptions.json.gz"
+PATH_TO_DATA: str = os.path.join('.', 'data', 'Magazine_Subscriptions.json.gz')
 # features and target columns to pull from the dataset
 # we are just demonstrating BERT by trying to classify rating by the review text
 # we will leave out other fields to minimize memory usage

@@ -1,14 +1,10 @@
 """file to train a BERT model of a custom dataset"""
 
-import torch
-from torch.utils.data import DataLoader
+
 import numpy as np
-import time
-from transformers import DistilBertForSequenceClassification, DistilBertForTokenClassification, AdamW, \
-    DistilBertTokenizerFast, BertTokenizerFast, TrainingArguments, BertForSequenceClassification, \
-    Trainer, TrainingArguments, EvalPrediction
+from transformers import DistilBertForSequenceClassification, DistilBertForTokenClassification,  \
+    DistilBertTokenizerFast, Trainer, TrainingArguments, EvalPrediction
 from datasets import load_metric
-from accelerate import Accelerator
 
 # This is being used to assist with annotation.
 BERT_TYPES = type(DistilBertTokenizerFast)
@@ -91,7 +87,7 @@ def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool):
         per_device_train_batch_size=16,
         per_device_eval_batch_size=64,
         warmup_steps=500,
-        weight_decay=0.01,
+        weight_decay=0.01
     )
     # Initialize the trainer with appropriate parameters
     # Ensure the object has the correct model, train and validation data sets,

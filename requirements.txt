@@ -1,6 +1,6 @@
-torch~=1.6.0
+torch ~= 1.10.0
 datasets~=1.15.1
 transformers~=4.11.3
-numpy~=1.21.2
-scikit-learn~=1.0.1
-accelerate~=0.5.1
+numpy>=1.19.5
+scikit-learn>=0.24.2
+seqeval~=1.2.2

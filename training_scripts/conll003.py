@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """This file loads data from the conll003 dataset and uses a fine-tuned BERT model for named entity recognition"""
 
+
+import os
 import zipfile as zp
 import numpy as np
 from resources.train_model import train_model
@@ -10,7 +12,7 @@ from sklearn.model_selection import train_test_split
 
 
 # The base path where the data archive is located.
-PATH_TO_DATA: str = './data/archive.zip'
+PATH_TO_DATA: str = os.path.join('.', 'data', 'archive.zip')
 
 # The file suffixes with data.
 FILES: dict = {'train': 'train.txt',
@@ -70,7 +72,7 @@ def select_subtoken(tags: list, offset_mapping: list, mapping: dict):
     """function to ensure that each label only has one associated token by
     by selecting the first subtoken for tokens with multiple subtokens.
     This is done by encoding labels so the model ignores certain subtokens.
-    :param labels: the list of labels
+    :param tags: the list of labels
     :param offset_mapping: the list off positions of subtokens for each sentence in the dataset
     start and end position of the subtokens for every token
     :param mapping - a dict that contains named entity classes that converts then to int ids
@@ -127,6 +129,7 @@ def run_ner():
     val_set = BertData(tokens=tokens_val, labels=val_label)
     train_model(data=ner_set, val=val_set, num_labels=len(target_classes), seq=False)
     print('done')
+
 
 if __name__ == "__main__":
     run_ner()
