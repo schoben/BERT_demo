@@ -22,6 +22,7 @@ def main():
     print('Amazon review classification complete!!!')
     run_ner(archive=PATH_TO_NER_DATA, file=NER_FILE, o_dir=OUTPUT_DIR, trunc=SAMPLE_LIMIT)
     print('Conll003 NER classification complete!!!')
+    print('All models successfully run!')
 
 
 if __name__ == "__main__":

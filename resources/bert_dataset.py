@@ -27,7 +27,7 @@ class BertData(Dataset):
         # create a dictionary out of sequences or tokens and their attention masks
         item = {key: torch.tensor(value[index]) for key, value in self.tokens.items()}
         # add label tensor to the dictionary
-        item['labels'] = torch.tensor((self.labels[index]))
+        item['labels'] = torch.tensor(self.labels[index])
         return item
 
     def __len__(self):
