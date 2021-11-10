@@ -92,11 +92,10 @@ def select_subtoken(tags: list, offset_mapping: list, mapping: dict):
     return encoded_labels
 
 
-def run_ner(archive: str, file: str, o_dir: str, trunc: int = 0):
+def run_ner(archive: str, file: str, trunc: int = 0):
     """The main method of the module. This function runs the code that will load, tokenize, and train.
     :param archive - the archive where the txt field is stored
     :param file - the file name of the txt file within the archive
-    :param o_dir - the directory to record results
     :param trunc - the maximum number of samples we want - 0 indicates we want the whole set"""
     raw_data, raw_labels = read_data(path=archive, file=file, trunc=trunc)
     # split the data into train and validation sets, ensure data is shuffled
@@ -136,4 +135,4 @@ def run_ner(archive: str, file: str, o_dir: str, trunc: int = 0):
     # one for token classification to perform this task
     ner_set = BertData(tokens=tokens_train, labels=train_label)
     val_set = BertData(tokens=tokens_val, labels=val_label)
-    train_model(data=ner_set, val=val_set, num_labels=len(target_classes), seq=False, o_dir=o_dir)
+    train_model(data=ner_set, val=val_set, num_labels=len(target_classes), seq=False)

@@ -45,10 +45,9 @@ def read_data(path: str, trunc: int = 0) -> (list, list):
     return data, labels
 
 
-def run_seq_cls(path: str, o_dir: str, trunc: int = 0):
+def run_seq_cls(path: str, trunc: int = 0):
     """the main method of the script that loads today and trains a fine-tuned BERT model
     :param path - a string where the file location is.
-    :param o_dir - the output directory for results
     :param trunc - the max number of samples to be collected, 0 means no limit."""
     # collect data matrix and labels
     raw_data, raw_labels = read_data(path=path, trunc=trunc)
@@ -74,4 +73,4 @@ def run_seq_cls(path: str, o_dir: str, trunc: int = 0):
     # is 2d.
     review_train = BertData(tokens_train, train_label)
     review_val = BertData(tokens_val, val_label)
-    train_model(data=review_train, val=review_val, num_labels=len(set(raw_labels)), seq=True, o_dir=o_dir)
+    train_model(data=review_train, val=review_val, num_labels=len(set(raw_labels)), seq=True)

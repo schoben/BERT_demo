@@ -62,13 +62,12 @@ def seq_eval(eval_pred: EvalPrediction) -> dict:
     return metric
 
 
-def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool, o_dir: str):
+def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool):
     """this function trains  a fine tuned bert model off a custom dataset
     :param data - the tokenized data to be trained
     :param val - the tokenized data for validation
     :param num_labels - the number of unique label values
-    :param seq - true if doing sequence classification false for token classification
-    :param o_dir - the output directory to use for logs and results"""
+    :param seq - true if doing sequence classification false for token classification"""
     # if training on sequences uses sequences model, otherwise use tokens model
     if seq:
         model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased', num_labels=num_labels)
@@ -81,7 +80,8 @@ def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool, o
     # specify parameters using the Training arguments
     # Since this is a demo, most values will be set arbitrarily
     training_args = TrainingArguments(
-        output_dir=o_dir,
+        # not necessary for the demo, but a required parameter
+        output_dir='results',
         # This is number of passes desired
         # Normally, we would do 3 or more, but this a demo
         num_train_epochs=1,
