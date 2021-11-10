@@ -5,7 +5,6 @@ import torch
 from torch.utils.data import Dataset
 from transformers import DistilBertTokenizerFast
 
-
 # This is being used to assist with annotation.
 BERT_TYPES = type(DistilBertTokenizerFast)
 
@@ -26,7 +25,7 @@ class BertData(Dataset):
         :return item - a dict containing the input id tensor, the attention mask tensor,
         and the label tensor. All are needed for input into a bert model"""
         # create a dictionary out of sequences or tokens and their attention masks
-        item = {key: torch.tensor(val[index]) for key, val in self.tokens.items()}
+        item = {key: torch.tensor(value[index]) for key, value in self.tokens.items()}
         # add label tensor to the dictionary
         item['labels'] = torch.tensor((self.labels[index]))
         return item

@@ -8,8 +8,7 @@ from datasets import load_metric
 
 # This is being used to assist with annotation.
 BERT_TYPES = type(DistilBertTokenizerFast)
-# This constant is the label assigned to tokens ignored in NER classificaiton.
-IGNORE = -100
+# This constant is the label assigned to tokens ignored in NER classification.
 
 
 def ner_eval(eval_pred: EvalPrediction) -> dict:
@@ -32,8 +31,8 @@ def ner_eval(eval_pred: EvalPrediction) -> dict:
     true_predictions = []
     true_labels = []
     for prediction, label in zip(predictions, labels):
-        true_pred = [mapping[pred] for pred, lab in zip(prediction, label) if lab != IGNORE]
-        true_lab = [mapping[lab] for pred, lab in zip(prediction, label) if lab != IGNORE]
+        true_pred = [mapping[pred] for pred, lab in zip(prediction, label) if lab != -100]
+        true_lab = [mapping[lab] for pred, lab in zip(prediction, label) if lab != -100]
         true_predictions.append(true_pred)
         true_labels.append(true_lab)
 
@@ -66,7 +65,7 @@ def seq_eval(eval_pred: EvalPrediction) -> dict:
 def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool, o_dir: str):
     """this function trains  a fine tuned bert model off a custom dataset
     :param data - the tokenized data to be trained
-    :param val - the teokenized data for validation
+    :param val - the tokenized data for validation
     :param num_labels - the number of unique label values
     :param seq - true if doing sequence classification false for token classification
     :param o_dir - the output directory to use for logs and results"""
@@ -83,26 +82,22 @@ def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool, o
     # Since this is a demo, most values will be set arbitrarily
     training_args = TrainingArguments(
         output_dir=o_dir,
-        # number of passes desired
-        num_train_epochs=3,
-        # size of the batches
-        per_device_train_batch_size=32,
+        # This is number of passes desired
+        # Normally, we would do 3 or more, but this a demo
+        num_train_epochs=1,
+        # These are the size of the batches
+        per_device_train_batch_size=64,
         per_device_eval_batch_size=64,
-        # #
-        warmup_steps=100,
-        #
+        # This is warm up steps to help model adjust to data
+        warmup_steps=20,
+        # This is the weight decay for tine tuning
         weight_decay=0.01
     )
     # Initialize the trainer with appropriate parameters
     # Ensure the object has the correct model, train and validation data sets,
     # and evaluation function for computing accuracy or any other metric
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=data,
-        eval_dataset=val,
-        compute_metrics=eval_func,
-    )
+    trainer = Trainer(model=model, args=training_args, train_dataset=data,
+                      eval_dataset=val, compute_metrics=eval_func)
     # Run the training and evaluate on the validation set
     trainer.train()
     trainer.evaluate()

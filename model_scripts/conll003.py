@@ -2,23 +2,12 @@
 """This file loads data from the conll003 dataset and uses a fine-tuned BERT model for named entity recognition"""
 
 
-import os
 import zipfile as zp
 import numpy as np
 from resources.train_model import train_model
 from resources.bert_dataset import BertData
 from transformers import DistilBertTokenizerFast
 from sklearn.model_selection import train_test_split
-
-
-# The base path where the data archive is located.
-# This is if we run file separatly
-PATH_TO_DATA: str = os.path.join('..', 'data', 'test.zip')
-# The file suffixes with data.
-FILES: dict = {'train': 'train.txt',
-               'test': 'test.txt',
-               'valid': 'valid.txt',
-               'short': 'ner_short.txt'}
 
 # The relevant fields to collect.
 # We want only the token and the named entity for this demonstration.
@@ -27,16 +16,14 @@ FIELDS: dict = {'token': 0, 'ne': 3}
 # We want tokens for capitalized words now that we are working with named entities
 PRETRAINED = 'distilbert-base-cased'
 
-# output directory if running this file alone
-OUTPUT_DIR: str = '../results'
 
-
-def read_data(path: str, file: str) -> (list, list):
+def read_data(path: str, file: str, trunc: int = 0) -> (list, list):
     """This function opens the zip archive with the data and retrieves data from a file inside
     The function intends to save memory by reading from a zip archive and iterating through each row
     :param path - the str path where the archive is located
     :param file - the the file name with the appropriate data - could be train, test, or valid
     depending on which data set we are looking at for the given task
+    :param trunc - the maximum number of samples we want - 0 indicates we want the whole set
     :return data, labels - two lists, one containing all the rows data and another the labels"""
     # initialize data list to store completed sentences
     data = []
@@ -61,6 +48,11 @@ def read_data(path: str, file: str) -> (list, list):
                         # reset sentence list
                         sentence = []
                         sentence_labels = []
+                    # Only collect a certain number of examples
+                    # used since this is a demo and we want to run code quickly
+                    if trunc > 0:
+                        if len(data) == trunc:
+                            break
                 # without the newline breaks, the row contains sentence parts that need to be parsed
                 else:
                     # split to easily parse elements of the row
@@ -100,12 +92,13 @@ def select_subtoken(tags: list, offset_mapping: list, mapping: dict):
     return encoded_labels
 
 
-def run_ner(archive: str, file: str, o_dir: str):
+def run_ner(archive: str, file: str, o_dir: str, trunc: int = 0):
     """The main method of the module. This function runs the code that will load, tokenize, and train.
     :param archive - the archive where the txt field is stored
     :param file - the file name of the txt file within the archive
-    :param o_dir - the directory to record results"""
-    raw_data, raw_labels = read_data(path=archive, file=file)
+    :param o_dir - the directory to record results
+    :param trunc - the maximum number of samples we want - 0 indicates we want the whole set"""
+    raw_data, raw_labels = read_data(path=archive, file=file, trunc=trunc)
     # split the data into train and validation sets, ensure data is shuffled
     train_data, val_data, train_label, val_label = train_test_split(raw_data,
                                                                     raw_labels,
@@ -133,7 +126,8 @@ def run_ner(archive: str, file: str, o_dir: str):
     # remove offset mapping before creating datasets for pytorch
     tokens_train.pop('offset_mapping')
     tokens_val.pop('offset_mapping')
-    # The feature tensor are similar are two dimensional (2589, 148) and contains numerically encoded tokens.
+    # The feature tensor are similar are two dimensional (num_sequences, num_tokens)
+    # and contains numerically encoded tokens.
     # This dataset departs from the amazon dataset in that the label tensor has the same dimensions
     # as the feature tensor because there is a label for every token (The Amazon set has 1 label per
     # sequence and so the labels are expressed in 1 dimension). Since we are trying to classify named entities,
@@ -143,9 +137,3 @@ def run_ner(archive: str, file: str, o_dir: str):
     ner_set = BertData(tokens=tokens_train, labels=train_label)
     val_set = BertData(tokens=tokens_val, labels=val_label)
     train_model(data=ner_set, val=val_set, num_labels=len(target_classes), seq=False, o_dir=o_dir)
-    print('done')
-
-
-if __name__ == "__main__":
-    # Run this with the appropriate path
-    run_ner(archive=PATH_TO_DATA, file=FILES['test'], o_dir=OUTPUT_DIR)
