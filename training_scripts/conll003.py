@@ -12,12 +12,13 @@ from sklearn.model_selection import train_test_split
 
 
 # The base path where the data archive is located.
-PATH_TO_DATA: str = os.path.join('.', 'data', 'archive.zip')
-
+# This is if we run file separatly
+PATH_TO_DATA: str = os.path.join('..', 'data', 'test.zip')
 # The file suffixes with data.
 FILES: dict = {'train': 'train.txt',
                'test': 'test.txt',
-               'valid': 'valid.txt'}
+               'valid': 'valid.txt',
+               'short': 'ner_short.txt'}
 
 # The relevant fields to collect.
 # We want only the token and the named entity for this demonstration.
@@ -25,6 +26,9 @@ FIELDS: dict = {'token': 0, 'ne': 3}
 
 # We want tokens for capitalized words now that we are working with named entities
 PRETRAINED = 'distilbert-base-cased'
+
+# output directory if running this file alone
+OUTPUT_DIR: str = '../results'
 
 
 def read_data(path: str, file: str) -> (list, list):
@@ -77,7 +81,7 @@ def select_subtoken(tags: list, offset_mapping: list, mapping: dict):
     start and end position of the subtokens for every token
     :param mapping - a dict that contains named entity classes that converts then to int ids
     :return encoded_labels - an list of labels suitable for use with the list of tokens in the BERT model"""
-    # We will leverage the previously made target to int map for get numerical values for each target (label) variab
+    # We will leverage the previously made target to int map for get numerical values for each target (label) variable
     labels = [[mapping[tag] for tag in sent] for sent in tags]
     encoded_labels = []
     for row_labels, row_offset in zip(labels, offset_mapping):
@@ -96,14 +100,18 @@ def select_subtoken(tags: list, offset_mapping: list, mapping: dict):
     return encoded_labels
 
 
-def run_ner():
-    """The main method of the module. This function runs the code that will load, tokenize, and train."""
-    raw_data, raw_labels = read_data(PATH_TO_DATA, FILES['train'])
+def run_ner(archive: str, file: str, o_dir: str):
+    """The main method of the module. This function runs the code that will load, tokenize, and train.
+    :param archive - the archive where the txt field is stored
+    :param file - the file name of the txt file within the archive
+    :param o_dir - the directory to record results"""
+    raw_data, raw_labels = read_data(path=archive, file=file)
     # split the data into train and validation sets, ensure data is shuffled
-    train_data, val_data, train_label, val_label = train_test_split(raw_data[0:2000],
-                                                                    raw_labels[0:2000],
+    train_data, val_data, train_label, val_label = train_test_split(raw_data,
+                                                                    raw_labels,
                                                                     shuffle=True,
-                                                                    random_state=42)
+                                                                    random_state=42,
+                                                                    test_size=0.25)
     # tokenize the text, but ensure that the tokenizer understands that words are already separated
     # We will ensure that longer sequences are truncated and shorter ones are padded
     tokenizer = DistilBertTokenizerFast.from_pretrained(PRETRAINED)
@@ -125,11 +133,19 @@ def run_ner():
     # remove offset mapping before creating datasets for pytorch
     tokens_train.pop('offset_mapping')
     tokens_val.pop('offset_mapping')
+    # The feature tensor are similar are two dimensional (2589, 148) and contains numerically encoded tokens.
+    # This dataset departs from the amazon dataset in that the label tensor has the same dimensions
+    # as the feature tensor because there is a label for every token (The Amazon set has 1 label per
+    # sequence and so the labels are expressed in 1 dimension). Since we are trying to classify named entities,
+    # this makes sense as each entity is a word. Note that the -100 label is there to indicate subtokens and padded
+    # values that the model should skip. We are also using a different BERT model -
+    # one for token classification to perform this task
     ner_set = BertData(tokens=tokens_train, labels=train_label)
     val_set = BertData(tokens=tokens_val, labels=val_label)
-    train_model(data=ner_set, val=val_set, num_labels=len(target_classes), seq=False)
+    train_model(data=ner_set, val=val_set, num_labels=len(target_classes), seq=False, o_dir=o_dir)
     print('done')
 
 
 if __name__ == "__main__":
-    run_ner()
+    # Run this with the appropriate path
+    run_ner(archive=PATH_TO_DATA, file=FILES['test'], o_dir=OUTPUT_DIR)

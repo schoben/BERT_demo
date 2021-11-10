@@ -1,6 +1,6 @@
-torch ~= 1.10.0
-datasets~=1.15.1
-transformers~=4.11.3
+torch == 1.10.0
+datasets==1.15.1
+transformers==4.11.3
 numpy>=1.19.5
 scikit-learn>=0.24.2
-seqeval~=1.2.2
+seqeval==1.2.2

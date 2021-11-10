@@ -10,8 +10,8 @@ from resources.bert_dataset import BertData
 from sklearn.model_selection import train_test_split
 from transformers import DistilBertTokenizerFast
 
-# set the path to where the data files are stored
-PATH_TO_DATA: str = os.path.join('.', 'data', 'Magazine_Subscriptions.json.gz')
+# set the path to where the data files are stored if running this file alone
+PATH_TO_DATA: str = os.path.join('..', 'data', 'Magazine_Subscriptions_short.json.gz')
 # features and target columns to pull from the dataset
 # we are just demonstrating BERT by trying to classify rating by the review text
 # we will leave out other fields to minimize memory usage
@@ -19,6 +19,8 @@ FIELDS: list = ['reviewText', 'overall']
 # This is the tokenizer we want, we are trying to evaluate sequence rating
 # capitalization not as important:
 PRETRAINED = 'distilbert-base-uncased'
+# output directory if running this file alone
+OUTPUT_DIR: str = '../results'
 
 
 def read_data(path: str) -> (list, list):
@@ -44,27 +46,38 @@ def read_data(path: str) -> (list, list):
     return data, labels
 
 
-def run_seq_cls():
-    """the main method of the script that loads today and trains a fine-tuned BERT model"""
+def run_seq_cls(path: str, o_dir: str):
+    """the main method of the script that loads today and trains a fine-tuned BERT model
+    :param path - a string where the file location is.
+    :param o_dir - the output directory for results"""
     # collect data matrix and labels
-    raw_data, raw_labels = read_data(path=PATH_TO_DATA)
+    raw_data, raw_labels = read_data(path=path)
     # split both X and y into train, test, and validation sets,ensure data is shuffled
     train_data, val_data, train_label, val_label = train_test_split(raw_data[0:2000],
                                                                     raw_labels[0:2000],
                                                                     shuffle=True,
-                                                                    random_state=42)
+                                                                    random_state=42,
+                                                                    test_size=0.25)
     # get tokenizer and create Dataset objects for train, test, and validation sets for use in model training
     tokenizer = DistilBertTokenizerFast.from_pretrained(PRETRAINED)
     # tokenize the reviews for the training set
-    tokens_train = tokenizer(train_data[0:2000], truncation=True, padding=True, max_length=30,
+    tokens_train = tokenizer(train_data, truncation=True, padding=True, max_length=30,
                              add_special_tokens=True)
     # tokenize the validation set
-    tokens_val = tokenizer(val_data[0:500], truncation=True, padding=True, max_length=30,
+    tokens_val = tokenizer(val_data, truncation=True, padding=True, max_length=30,
                            add_special_tokens=True)
-    review_train = BertData(tokens_train, train_label[0:2000])
-    review_val = BertData(tokens_val, val_label[0:500])
-    train_model(data=review_train, val=review_val, num_labels=len(set(raw_labels)), seq=True)
+    # The resulting features training tensor will be 2 dimensional and contain 750 (train) or 250 (val)
+    # sequences (rows) with 30 tokens encoded numerically each as specified by the max_length
+    # sequences shorter than 30 tokens will be padded with zeros
+    # In addition to the token id tensor, there is also an attention mask shaped similarly
+    # with 0s and 1s indicating whether or not a token is a padded zero so it may be ignored.
+    # There is one label per sequence which represents a star rating for that document.
+    # This is in contrast tot the NER data, which has a label for each token and so the target tensor
+    # is 2d.
+    review_train = BertData(tokens_train, train_label)
+    review_val = BertData(tokens_val, val_label)
+    train_model(data=review_train, val=review_val, num_labels=len(set(raw_labels)), seq=True, o_dir=o_dir)
 
 
 if __name__ == "__main__":
-    run_seq_cls()
+    run_seq_cls(PATH_TO_DATA, o_dir=OUTPUT_DIR)

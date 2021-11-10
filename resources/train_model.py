@@ -63,12 +63,13 @@ def seq_eval(eval_pred: EvalPrediction) -> dict:
     return metric
 
 
-def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool):
+def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool, o_dir: str):
     """this function trains  a fine tuned bert model off a custom dataset
     :param data - the tokenized data to be trained
     :param val - the teokenized data for validation
     :param num_labels - the number of unique label values
-    :param seq - true if doing sequence classification false for token classification"""
+    :param seq - true if doing sequence classification false for token classification
+    :param o_dir - the output directory to use for logs and results"""
     # if training on sequences uses sequences model, otherwise use tokens model
     if seq:
         model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased', num_labels=num_labels)
@@ -81,12 +82,15 @@ def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool):
     # specify parameters using the Training arguments
     # Since this is a demo, most values will be set arbitrarily
     training_args = TrainingArguments(
-        output_dir='results',
+        output_dir=o_dir,
         # number of passes desired
         num_train_epochs=3,
-        per_device_train_batch_size=16,
+        # size of the batches
+        per_device_train_batch_size=32,
         per_device_eval_batch_size=64,
-        warmup_steps=500,
+        # #
+        warmup_steps=100,
+        #
         weight_decay=0.01
     )
     # Initialize the trainer with appropriate parameters
