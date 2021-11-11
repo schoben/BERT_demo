@@ -1,14 +1,15 @@
+# -*- coding: utf-8 -*-
 """file to train a BERT model of a custom dataset"""
 
 
 import numpy as np
 from transformers import DistilBertForSequenceClassification, DistilBertForTokenClassification,  \
     DistilBertTokenizerFast, Trainer, TrainingArguments, EvalPrediction
+from transformers.integrations import TensorBoardCallback
 from datasets import load_metric
 
 # This is being used to assist with annotation.
 BERT_TYPES = type(DistilBertTokenizerFast)
-# This constant is the label assigned to tokens ignored in NER classification.
 
 
 def ner_eval(eval_pred: EvalPrediction) -> dict:
@@ -75,13 +76,12 @@ def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool):
     else:
         model = DistilBertForTokenClassification.from_pretrained('distilbert-base-cased', num_labels=num_labels)
         eval_func = ner_eval
-
     # Use trainer object for easy and optimized training
     # specify parameters using the Training arguments
     # Since this is a demo, most values will be set arbitrarily
     training_args = TrainingArguments(
         # not necessary for the demo, but a required parameter
-        output_dir='results',
+        output_dir='tmp',
         # This is number of passes desired
         # Normally, we would do 3 or more, but this a demo
         num_train_epochs=1,
@@ -98,6 +98,8 @@ def train_model(data: BERT_TYPES, val: BERT_TYPES, num_labels: int, seq: bool):
     # and evaluation function for computing accuracy or any other metric
     trainer = Trainer(model=model, args=training_args, train_dataset=data,
                       eval_dataset=val, compute_metrics=eval_func)
+    # This disables the reporting output, which we do not need for this demo.
+    trainer.remove_callback(TensorBoardCallback)
     # Run the training and evaluate on the validation set
     trainer.train()
     trainer.evaluate()

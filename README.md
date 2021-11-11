@@ -21,13 +21,20 @@ to predict some form of sentiment (ratings) on whole sequences
 while the CoNLL003 set is being used to identify types of named entity on a word basis,
 the difference in shape is not surprising.
 
-To get started go into the main repository directory run:
+The requirements are listed in requirements.txt. If needed, they can be installed:
+Go into the main repository directory (BERT_demo) and run:
 
 ```pip install -r requirements.txt```
 
-After that:
+After that you can run all the models:
 
-```python run_all_models.py```
+```python run_models.py```
+
+Or just run the 1 of them:
+
+```python run_models.py -n``` for Named Entity Recognition on the CoNLL003 data.
+
+```python run_models.py -a``` for Sentiment Classification on the Amazon review set.
 
 Thank you for viewing this demo!
 

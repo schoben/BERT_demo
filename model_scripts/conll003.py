@@ -17,13 +17,13 @@ FIELDS: dict = {'token': 0, 'ne': 3}
 PRETRAINED = 'distilbert-base-cased'
 
 
-def read_data(path: str, file: str, trunc: int = 0) -> (list, list):
+def read_data(path: str, file: str, trunc: int = None) -> (list, list):
     """This function opens the zip archive with the data and retrieves data from a file inside
     The function intends to save memory by reading from a zip archive and iterating through each row
     :param path - the str path where the archive is located
     :param file - the the file name with the appropriate data - could be train, test, or valid
     depending on which data set we are looking at for the given task
-    :param trunc - the maximum number of samples we want - 0 indicates we want the whole set
+    :param trunc - optional, the maximum number of samples we want otherwise run on all available data
     :return data, labels - two lists, one containing all the rows data and another the labels"""
     # initialize data list to store completed sentences
     data = []
@@ -50,7 +50,7 @@ def read_data(path: str, file: str, trunc: int = 0) -> (list, list):
                         sentence_labels = []
                     # Only collect a certain number of examples
                     # used since this is a demo and we want to run code quickly
-                    if trunc > 0:
+                    if trunc:
                         if len(data) == trunc:
                             break
                 # without the newline breaks, the row contains sentence parts that need to be parsed
@@ -92,11 +92,11 @@ def select_subtoken(tags: list, offset_mapping: list, mapping: dict):
     return encoded_labels
 
 
-def run_ner(archive: str, file: str, trunc: int = 0):
+def run_ner(archive: str, file: str, trunc: int = None):
     """The main method of the module. This function runs the code that will load, tokenize, and train.
     :param archive - the archive where the txt field is stored
     :param file - the file name of the txt file within the archive
-    :param trunc - the maximum number of samples we want - 0 indicates we want the whole set"""
+    :param trunc - optional, the maximum number of samples we want otherwise run on all available data"""
     raw_data, raw_labels = read_data(path=archive, file=file, trunc=trunc)
     # split the data into train and validation sets, ensure data is shuffled
     train_data, val_data, train_label, val_label = train_test_split(raw_data,

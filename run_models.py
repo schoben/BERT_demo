@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""This file runs both models one after the other conveniently"""
+"""This file runs both models one after the other conveniently - it can also be set to run one at a time if needed"""
 
 import os
 import argparse
@@ -29,9 +29,11 @@ def main():
     args = parser.parse_args()
     # This determines what gets shown
     if (not args.amazon and not args.ner) or (args.amazon and args.ner):
-        # The default is that both models get run
+        # The default is that both models get to run
         run_seq_cls(path=PATH_TO_SEQ_DATA, trunc=SAMPLE_LIMIT)
-        run_seq_cls(path=PATH_TO_SEQ_DATA, trunc=SAMPLE_LIMIT)
+        print('Amazon review classification complete!!!')
+        run_ner(archive=PATH_TO_NER_DATA, file=NER_FILE, trunc=SAMPLE_LIMIT)
+        print('Conll003 NER classification complete!!!')
         print('All models successfully run!')
 
     elif args.amazon:

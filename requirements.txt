@@ -1,6 +1,7 @@
-torch == 1.10.0
+torch==1.10.0
 datasets==1.15.1
 transformers==4.11.3
-numpy>=1.19.5
-scikit-learn>=0.24.2
+#numpy and scikit-learn need more flexibility in versions to work with python 3.6
+numpy>=1.19.5, <=1.21.4
+scikit-learn>=0.24.2, <=1.0.1
 seqeval==1.2.2

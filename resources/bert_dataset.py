@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This file contains the pytorch dataset class for use by both models to contain the labels
  and encodings of the data"""
 
