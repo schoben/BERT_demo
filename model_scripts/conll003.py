@@ -116,13 +116,13 @@ def run_ner(archive: str, file: str, trunc: int = None):
     # we need to have only one token for each label, so we will choose only 1 of the sub-tokens
     # we need to start by getting a list of the total unique labels for the tokens
     target_classes = set(tag for row in raw_labels for tag in row)
-    # create a 2 way mapping for these classes
+    # create a mapping for these classes
     tag_ids = {tag: i for i, tag in enumerate(target_classes)}
     # We are ensuring that only the first subtoken out of a split token gets a label
     train_label = select_subtoken(tags=train_label, offset_mapping=tokens_train['offset_mapping'], mapping=tag_ids)
     val_label = select_subtoken(tags=val_label, offset_mapping=tokens_val['offset_mapping'], mapping=tag_ids)
 
-    # remove offset mapping before creating datasets for pytorch
+    # remove offset mapping before creating datasets for pytorch/trainer
     tokens_train.pop('offset_mapping')
     tokens_val.pop('offset_mapping')
     # The feature tensor are similar are two dimensional (num_sequences, num_tokens)

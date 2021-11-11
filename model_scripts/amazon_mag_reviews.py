@@ -41,7 +41,6 @@ def read_data(path: str, trunc: int = None) -> (list, list):
             if trunc:
                 if len(data) == trunc:
                     break
-    # convert list to array for easier/faster processing
     return data, labels
 
 

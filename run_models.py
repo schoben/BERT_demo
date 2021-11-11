@@ -11,12 +11,13 @@ PATH_TO_SEQ_DATA: str = os.path.join('data', 'Magazine_Subscriptions_short.json.
 PATH_TO_NER_DATA: str = os.path.join('data', 'test.zip')
 NER_FILE: str = 'test.txt'
 # The max number of samples we want from each dataset for the demo
-# set equal to 0 to include all samples
+# set to None to include all samples
 SAMPLE_LIMIT: int = 800
 
 
 def main():
-    """The main method of this module"""
+    """The main method of this module - collects the arguments in the parser
+    and runs appropriate models"""
     # collect arguments to determine which model to run
     parser = argparse.ArgumentParser()
     # add arguments for each model type
@@ -30,17 +31,21 @@ def main():
     # This determines what gets shown
     if (not args.amazon and not args.ner) or (args.amazon and args.ner):
         # The default is that both models get to run
+        print('Starting Amazon review sequence classification')
         run_seq_cls(path=PATH_TO_SEQ_DATA, trunc=SAMPLE_LIMIT)
         print('Amazon review classification complete!!!')
+        print('Starting Conll003 NER classification')
         run_ner(archive=PATH_TO_NER_DATA, file=NER_FILE, trunc=SAMPLE_LIMIT)
         print('Conll003 NER classification complete!!!')
         print('All models successfully run!')
 
     elif args.amazon:
+        print('Starting Amazon review Sequence Classification')
         run_seq_cls(path=PATH_TO_SEQ_DATA, trunc=SAMPLE_LIMIT)
         print('Amazon review classification complete!!!')
 
     elif args.ner:
+        print('Starting Conll003 NER classification')
         run_ner(archive=PATH_TO_NER_DATA, file=NER_FILE, trunc=SAMPLE_LIMIT)
         print('Conll003 NER classification complete!!!')
 

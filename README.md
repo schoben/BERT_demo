@@ -21,7 +21,7 @@ to predict some form of sentiment (ratings) on whole sequences
 while the CoNLL003 set is being used to identify types of named entity on a word basis,
 the difference in shape is not surprising.
 
-The requirements are listed in requirements.txt. If needed, they can be installed:
+The requirements are listed in requirements.txt. If needed, they can be installed. Make sure you are using python 3.6-3.9 before running this repository.
 Go into the main repository directory (BERT_demo) and run:
 
 ```pip install -r requirements.txt```
