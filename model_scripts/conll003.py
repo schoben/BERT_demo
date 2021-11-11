@@ -125,7 +125,9 @@ def run_ner(archive: str, file: str, trunc: int = None):
     # remove offset mapping before creating datasets for pytorch/trainer
     tokens_train.pop('offset_mapping')
     tokens_val.pop('offset_mapping')
-    # The feature tensor are similar are two dimensional (num_sequences, num_tokens)
+    # The dataset for CoNLL003 consists of sequences of words that are each labeled with numerous attributes,
+    # such as named entity status. Unlike the Amazon dataset, each word in each sequence has a label.
+    # Thus, the feature tensor is also two dimensional (num_sequences, num_tokens)
     # and contains numerically encoded tokens.
     # This dataset departs from the amazon dataset in that the label tensor has the same dimensions
     # as the feature tensor because there is a label for every token (The Amazon set has 1 label per

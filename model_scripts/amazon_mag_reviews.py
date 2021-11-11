@@ -64,7 +64,9 @@ def run_seq_cls(path: str, trunc: int = None):
     # tokenize the validation set
     tokens_val = tokenizer(val_data, truncation=True, padding=True, max_length=30,
                            add_special_tokens=True)
-    # The resulting features training tensor will be 2 dimensional and contain
+    # The dataset here consists of rows of documents(sequences) with a numerical label
+    # indicating a form sentiment of sentiment for each sequence.
+    # The resulting features training tensor will thus be 2 dimensional and contain
     # sequences (rows) with 30 tokens encoded numerically each as specified by the max_length
     # Sequences shorter than 30 tokens will be padded with zeros.
     # There is one label per sequence which represents a star rating for that document.
